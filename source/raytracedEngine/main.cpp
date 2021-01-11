@@ -5,27 +5,35 @@
 #include <fstream>
 
 // Compute the hit location with a shpere
-bool hit_sphere(const vec3& sphereCenter, double sphereRadius, const ray& r) 
+double hit_sphere(const vec3& sphereCenter, double sphereRadius, const ray& r) 
 {
+    // The dot product of the same vector is a trick to get pow(vector.length, 2)
     vec3 oc = r.origin() - sphereCenter;
     auto a = dot(r.direction(), r.direction());
     auto b = 2.0 * dot(oc, r.direction());
     auto c = dot(oc, oc) - sphereRadius*sphereRadius;
     auto discriminant = b*b - 4*a*c;
-    return (discriminant > 0);
+    // If we hit a shpere, return the distance of the hit location
+    if (discriminant < 0) {
+        return -1.0;
+    } else {
+        return (-b - sqrt(discriminant) ) / (2.0*a);
+    }
 }
 
 // Get the hit color, if no hit, return the background (like a default color)
 color ray_color(const ray& r)
 {
-    // Of the ray hit a sphere
-    if (hit_sphere(point3(0,0,-1), 0.5, r))
-    {
-        return color(1, 0, 0);
-    }
+    double t = hit_sphere(point3(0,0,-1), 0.5, r);
+    // If the ray hit a sphere
+    if (t > 0.0) {
+        // Get the normal of the sphere at the hit location
+        vec3 N = unit_vector(r.at(t) - vec3(0,0,-1));
+        return 0.5*color(N.x()+1, N.y()+1, N.z()+1);
+    }    
     // Get the normalized vector
     vec3 unit_direction = unit_vector(r.direction());
-    double t = 0.5 * (unit_direction.y() + 1.0);
+    t = 0.5 * (unit_direction.y() + 1.0);
     return (1.0 - t) * color(1.0f, 1.0f, 1.0f) + t * color(0.5f, 0.7f, 1.0f);
 }
 
