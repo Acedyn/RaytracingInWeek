@@ -1,31 +1,35 @@
+#include "color.h"
+
 #include <iostream>
 #include <fstream>
 
 
 int main()
 {
-    int nx = 200;
-    int ny = 100;
+    // Image size
+    const int IMG_WIDTH = 200;
+    const int IMG_HEIGHT = 100;
 
+    // Output file
     std::ofstream file("raytracing.ppm");
 
-    file << "P3\n" << nx << " " << ny << "\n255\n";
+    ////////////////////////////////////////
+    // Rendering
+    ////////////////////////////////////////
+    file << "P3\n" << IMG_WIDTH << " " << IMG_HEIGHT << "\n255\n";
 
-    for(int j = ny - 1; j >= 0; j--)
+    // Loop over all the pixels
+    for(int j = IMG_HEIGHT - 1; j >= 0; j--)
     {
-        for(int i = 0; i < nx; i++)
+        for(int i = 0; i < IMG_WIDTH; i++)
         {
-            float r = float(i) / float(nx);
-            float g = float(j) / float(ny);
-            float b = 0.2f;
-
-            int ir = int(255.99 * r);
-            int ig = int(255.99 * g);
-            int ib = int(255.99 * b);
-            
-            file << ir << " " << ig << " " << ib << "\n";
+            // Compute the color of the current pixel
+            color pixel_color(double(i) / (IMG_WIDTH - 1), double(j) / (IMG_HEIGHT - 1), 0.25f);
+            // Store the color
+            write_color(file, pixel_color);
         }
     }
 
+    // Output the file
     file.close();
 }
