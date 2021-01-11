@@ -4,10 +4,25 @@
 #include <iostream>
 #include <fstream>
 
+// Compute the hit location with a shpere
+bool hit_sphere(const vec3& sphereCenter, double sphereRadius, const ray& r) 
+{
+    vec3 oc = r.origin() - sphereCenter;
+    auto a = dot(r.direction(), r.direction());
+    auto b = 2.0 * dot(oc, r.direction());
+    auto c = dot(oc, oc) - sphereRadius*sphereRadius;
+    auto discriminant = b*b - 4*a*c;
+    return (discriminant > 0);
+}
 
-// Return the background (like a default color) wich if a blue gradient to white
+// Get the hit color, if no hit, return the background (like a default color)
 color ray_color(const ray& r)
 {
+    // Of the ray hit a sphere
+    if (hit_sphere(point3(0,0,-1), 0.5, r))
+    {
+        return color(1, 0, 0);
+    }
     // Get the normalized vector
     vec3 unit_direction = unit_vector(r.direction());
     double t = 0.5 * (unit_direction.y() + 1.0);
