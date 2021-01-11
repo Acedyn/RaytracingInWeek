@@ -1,0 +1,5 @@
+.vim
+binaries
+build
+external
+.clangd
