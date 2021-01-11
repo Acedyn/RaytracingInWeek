@@ -5,7 +5,7 @@
 #include <fstream>
 
 
-// Return the background (like a default color)
+// Return the background (like a default color) wich if a blue gradient to white
 color ray_color(const ray& r)
 {
     // Get the normalized vector
@@ -21,15 +21,24 @@ int main()
     const int IMG_WIDTH = 400;
     const int IMG_HEIGHT = static_cast<int>(IMG_WIDTH / ASPECT_RATIO);
 
-    // Camera properties
+    ////////////////////////////////////////
+    // Camera
+    ////////////////////////////////////////
+
+    // Viewport
     double viewport_height = 2.0f;
     double viewport_width = ASPECT_RATIO * viewport_height;
+
+    // Distance between the camera and the viewport
     double focal_length = 1.0;
 
-    // Camera transform
+    // Position of the camera
     vec3 origin = vec3(0.0f, 0.0f, 0.0f);
+    // X axis of the camera's tranform
     vec3 horizontal = vec3(viewport_width, 0.0f, 0.0f);
+    // Y acis of the camera's tranform
     vec3 vertical = vec3(0.0f, viewport_height, 0.0f);
+    // Vector pointing from the camera's origin to the lower left corner of the viewport
     vec3 lower_left_corner = origin - horizontal/2 - vertical/2 - vec3(0, 0, focal_length);
 
     // Output file
@@ -48,8 +57,10 @@ int main()
             // Compute normalized coordinates
             double u = double(i) / (IMG_WIDTH-1);
             double v = double(j) / (IMG_HEIGHT-1);
-            // Compute the color of the current pixel
-            color pixel_color(double(i) / (IMG_WIDTH - 1), double(j) / (IMG_HEIGHT - 1), 0.25f);
+            // Compute the ray from the camera to the current pixel on the viewport
+            ray r(origin, lower_left_corner + u*horizontal + v*vertical - origin);
+            // Get the default color
+            color pixel_color = ray_color(r);
             // Store the color
             write_color(file, pixel_color);
         }
