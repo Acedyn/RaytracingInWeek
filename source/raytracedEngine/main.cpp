@@ -1,5 +1,7 @@
+#include "utility.h"
 #include "color.h"
-#include "ray.h"
+#include "hittable_list.h"
+#include "sphere.h"
 
 #include <iostream>
 #include <fstream>
@@ -23,20 +25,18 @@ double hit_sphere(const vec3& sphereCenter, double sphereRadius, const ray& r) {
 }
 
 // Get the hit color, if no hit, return the background (like a default color)
-color ray_color(const ray& r)
+color ray_color(const ray& r, const hittable& world)
 {
-    double t = hit_sphere(point3(0,0,-1), 0.5, r);
-    // If the ray hit a sphere
-    if (t > 0.0) 
-    {
-        // Get the normal of the sphere at the hit location
-        vec3 N = unit_vector(r.at(t) - vec3(0,0,-1));
-        return 0.5*color(N.x()+1, N.y()+1, N.z()+1);
-    }    
-    // Get the normalized vector
+    hit_record rec;
+    // Test if the ray hit one of the objects
+    if (world.hit(r, 0, INFINITE, rec)) {
+        // If we hit return the color at the location
+        return 0.5 * (rec.normal + color(1,1,1));
+    }
+    // If no hit we return the background
     vec3 unit_direction = unit_vector(r.direction());
-    t = 0.5 * (unit_direction.y() + 1.0);
-    return (1.0 - t) * color(1.0f, 1.0f, 1.0f) + t * color(0.5f, 0.7f, 1.0f);
+    auto t = 0.5*(unit_direction.y() + 1.0);
+    return (1.0-t)*color(1.0, 1.0, 1.0) + t*color(0.5, 0.7, 1.0);
 }
 
 int main()
@@ -45,6 +45,11 @@ int main()
     const double ASPECT_RATIO = 16.0f / 9.0f;
     const int IMG_WIDTH = 400;
     const int IMG_HEIGHT = static_cast<int>(IMG_WIDTH / ASPECT_RATIO);
+
+    // World assets
+    hittable_list world;
+    world.add(std::make_shared<sphere>(vec3(0,0,-1), 0.5));
+    world.add(std::make_shared<sphere>(vec3(0,-100.5,-1), 100));
 
     ////////////////////////////////////////
     // Camera
@@ -84,8 +89,8 @@ int main()
             double v = double(j) / (IMG_HEIGHT-1);
             // Compute the ray from the camera to the current pixel on the viewport
             ray r(origin, lower_left_corner + u*horizontal + v*vertical - origin);
-            // Get the default color
-            color pixel_color = ray_color(r);
+            // Test the ray hit over all the objects of the scene
+            color pixel_color = ray_color(r, world);
             // Store the color
             write_color(file, pixel_color);
         }
