@@ -3,6 +3,7 @@
 #include "hittable_list.h"
 #include "sphere.h"
 #include "camera.h"
+#include "material.h"
 
 #include <iostream>
 #include <fstream>
@@ -16,10 +17,17 @@ color ray_color(const ray& r, const hittable& world, int depth)
     // Test if the ray hit one of the objects
     if (world.hit(r, 0.001, INFINITE, rec)) 
     {
-        // If we hit, we cast an other ray from the normal with a little random shift
-        vec3 target = rec.p + rec.normal + random_in_hemisphere();
-        // The recursively call this function with the new ray to get the reflections
-        return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);
+        // Ray that will be overriden by scatter() (passed by reference)
+        ray scattered;
+        // Colot that will be overriden by scatter() (passed by reference)
+        color attenuation;
+        // Get the info of the material and pass them to attenuation and scattered
+        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+        {
+            // Go for an other iteration with the new bounced ray
+            return attenuation * ray_color(scattered, world, depth-1);
+        }
+        return color(0,0,0);
     }
     // If no hit we return the background
     vec3 unit_direction = unit_vector(r.direction());
@@ -33,13 +41,20 @@ int main()
     const double ASPECT_RATIO = 16.0f / 9.0f;
     const int IMG_WIDTH = 400;
     const int IMG_HEIGHT = static_cast<int>(IMG_WIDTH / ASPECT_RATIO);
-    const int samples_per_pixel = 20;
-    const int max_depth = 20;
+    const int samples_per_pixel = 10;
+    const int max_depth = 10;
 
     // World assets
     hittable_list world;
-    world.add(std::make_shared<sphere>(vec3(0,0,-1), 0.5));
-    world.add(std::make_shared<sphere>(vec3(0,-100.5,-1), 100));
+    std::shared_ptr<material> material_ground = std::make_shared<lambertian>(color(0.8, 0.8, 0.0));
+    std::shared_ptr<material>material_center = std::make_shared<lambertian>(color(0.7, 0.3, 0.3));
+    std::shared_ptr<material> material_left   = std::make_shared<metal>(color(0.8, 0.8, 0.8));
+    std::shared_ptr<material> material_right  = std::make_shared<metal>(color(0.8, 0.6, 0.2));
+
+    world.add(std::make_shared<sphere>(point3( 0.0, -100.5, -1.0), 100.0, material_ground));
+    world.add(std::make_shared<sphere>(point3( 0.0,    0.0, -1.0),   0.5, material_center));
+    world.add(std::make_shared<sphere>(point3(-1.0,    0.0, -1.0),   0.5, material_left));
+    world.add(std::make_shared<sphere>(point3( 1.0,    0.0, -1.0),   0.5, material_right));
 
     // Create a camera that will create rays
     camera cam;
