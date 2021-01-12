@@ -14,9 +14,10 @@ color ray_color(const ray& r, const hittable& world, int depth)
     // If we've exceeded the ray bounce limit, no more light is gathered.
     if (depth <= 0) { return color(0,0,0); }
     // Test if the ray hit one of the objects
-    if (world.hit(r, 0, INFINITE, rec)) {
+    if (world.hit(r, 0.001, INFINITE, rec)) 
+    {
         // If we hit, we cast an other ray from the normal with a little random shift
-        vec3 target = rec.p + rec.normal + random_in_unit_sphere();
+        vec3 target = rec.p + rec.normal + random_in_hemisphere();
         // The recursively call this function with the new ray to get the reflections
         return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);
     }
@@ -38,7 +39,6 @@ int main()
     // World assets
     hittable_list world;
     world.add(std::make_shared<sphere>(vec3(0,0,-1), 0.5));
-    world.add(std::make_shared<sphere>(vec3(2,0,-1), 0.5));
     world.add(std::make_shared<sphere>(vec3(0,-100.5,-1), 100));
 
     // Create a camera that will create rays
