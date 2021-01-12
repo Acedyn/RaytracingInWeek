@@ -7,7 +7,10 @@ class sphere : public hittable
 {
     public:
         sphere() {}
-        sphere(vec3 center, double radius) : center(center), radius(radius) {};
+        sphere(vec3 center, double radius, std::shared_ptr<material> m) : 
+            center(center), 
+            radius(radius),
+            mat_ptr(m) {};
 
         virtual bool hit(
             const ray& r, double t_min, double t_max, hit_record& rec) const override;
@@ -15,6 +18,7 @@ class sphere : public hittable
     public:
         point3 center;
         double radius;
+        std::shared_ptr<material> mat_ptr;
 };
 
 // Test of a ray is hitting this sphere
@@ -50,6 +54,7 @@ bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec) cons
     rec.t = root;
     rec.p = r.at(rec.t);
     rec.normal = (rec.p - center) / radius;
+    rec.mat_ptr = mat_ptr;
 
     // Store the orientation of the normal from the orientation of the ray
     // to check if we hit the face from the front or from the face

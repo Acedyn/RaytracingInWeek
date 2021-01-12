@@ -3,6 +3,8 @@
 #include "ray.h"
 #include "utility.h"
 
+class material;
+
 // Output of a hit test
 struct hit_record 
 {
@@ -12,6 +14,8 @@ struct hit_record
     vec3 normal;
     // Hit distance
     double t;
+    // Hit material
+    std::shared_ptr<material> mat_ptr;
     
     // Hit orientation of the normal
     bool front_face;
