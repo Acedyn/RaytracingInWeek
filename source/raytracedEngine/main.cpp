@@ -2,6 +2,7 @@
 #include "color.h"
 #include "hittable_list.h"
 #include "sphere.h"
+#include "camera.h"
 
 #include <iostream>
 #include <fstream>
@@ -45,31 +46,15 @@ int main()
     const double ASPECT_RATIO = 16.0f / 9.0f;
     const int IMG_WIDTH = 400;
     const int IMG_HEIGHT = static_cast<int>(IMG_WIDTH / ASPECT_RATIO);
+    const int samples_per_pixel = 20;
 
     // World assets
     hittable_list world;
     world.add(std::make_shared<sphere>(vec3(0,0,-1), 0.5));
     world.add(std::make_shared<sphere>(vec3(0,-100.5,-1), 100));
 
-    ////////////////////////////////////////
-    // Camera
-    ////////////////////////////////////////
-
-    // Viewport
-    double viewport_height = 2.0f;
-    double viewport_width = ASPECT_RATIO * viewport_height;
-
-    // Distance between the camera and the viewport
-    double focal_length = 1.0;
-
-    // Position of the camera
-    vec3 origin = vec3(0.0f, 0.0f, 0.0f);
-    // X axis of the camera's tranform
-    vec3 horizontal = vec3(viewport_width, 0.0f, 0.0f);
-    // Y acis of the camera's tranform
-    vec3 vertical = vec3(0.0f, viewport_height, 0.0f);
-    // Vector pointing from the camera's origin to the lower left corner of the viewport
-    vec3 lower_left_corner = origin - horizontal/2 - vertical/2 - vec3(0, 0, focal_length);
+    // Create a camera that will create rays
+    camera cam;
 
     // Output file
     std::ofstream file("raytracing.ppm");
@@ -84,15 +69,21 @@ int main()
     {
         for(int i = 0; i < IMG_WIDTH; i++)
         {
-            // Compute normalized coordinates
-            double u = double(i) / (IMG_WIDTH-1);
-            double v = double(j) / (IMG_HEIGHT-1);
-            // Compute the ray from the camera to the current pixel on the viewport
-            ray r(origin, lower_left_corner + u*horizontal + v*vertical - origin);
-            // Test the ray hit over all the objects of the scene
-            color pixel_color = ray_color(r, world);
-            // Store the color
-            write_color(file, pixel_color);
+            // Initialize color with default value
+            color pixel_color(0, 0, 0);
+            // Loop over all the samples for this pixel
+            for (int s = 0; s < samples_per_pixel; ++s) 
+            {
+                // Get the normalized coordinates of the pixel
+                double u = (double(i) + random_double()) / (IMG_WIDTH-1);
+                double v = (double(j) + random_double()) / (IMG_HEIGHT-1);
+                // Get the ray from the camera to this pixel
+                ray r = cam.get_ray(u, v);
+                // Compute the ray color and add it to the pixel color
+                pixel_color += ray_color(r, world);
+            }
+            // Average the color between all the samples and write it out
+            write_color(file, pixel_color, samples_per_pixel);
         }
     }
 
