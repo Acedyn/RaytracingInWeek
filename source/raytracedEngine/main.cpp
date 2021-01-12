@@ -41,15 +41,15 @@ int main()
     const double ASPECT_RATIO = 16.0f / 9.0f;
     const int IMG_WIDTH = 400;
     const int IMG_HEIGHT = static_cast<int>(IMG_WIDTH / ASPECT_RATIO);
-    const int samples_per_pixel = 10;
-    const int max_depth = 10;
+    const int samples_per_pixel = 100;
+    const int max_depth = 50;
 
     // World assets
     hittable_list world;
     std::shared_ptr<material> material_ground = std::make_shared<lambertian>(color(0.8, 0.8, 0.0));
-    std::shared_ptr<material>material_center = std::make_shared<lambertian>(color(0.7, 0.3, 0.3));
-    std::shared_ptr<material> material_left   = std::make_shared<metal>(color(0.8, 0.8, 0.8));
-    std::shared_ptr<material> material_right  = std::make_shared<metal>(color(0.8, 0.6, 0.2));
+    std::shared_ptr<material>material_center = std::make_shared<lambertian>(color(0.1, 0.2, 0.5));
+    std::shared_ptr<material> material_left   = std::make_shared<dielectric>(1.5);
+    std::shared_ptr<material> material_right  = std::make_shared<metal>(color(0.8, 0.6, 0.2), 0.1);
 
     world.add(std::make_shared<sphere>(point3( 0.0, -100.5, -1.0), 100.0, material_ground));
     world.add(std::make_shared<sphere>(point3( 0.0,    0.0, -1.0),   0.5, material_center));
