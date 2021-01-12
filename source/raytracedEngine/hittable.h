@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ray.h"
+#include "utility.h"
 
 // Output of a hit test
 struct hit_record 

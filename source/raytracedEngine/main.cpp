@@ -7,32 +7,18 @@
 #include <iostream>
 #include <fstream>
 
-// Compute the hit location with a shpere
-double hit_sphere(const vec3& sphereCenter, double sphereRadius, const ray& r) {
-    vec3 oc = r.origin() - sphereCenter;
-    auto a = r.direction().length_squared();
-    auto half_b = dot(oc, r.direction());
-    auto c = oc.length_squared() - sphereRadius * sphereRadius;
-    auto discriminant = half_b*half_b - a*c;
-
-    if (discriminant < 0) 
-    {
-        return -1.0;
-    } 
-    else 
-    {
-        return (-half_b - sqrt(discriminant) ) / a;
-    }
-}
-
 // Get the hit color, if no hit, return the background (like a default color)
-color ray_color(const ray& r, const hittable& world)
+color ray_color(const ray& r, const hittable& world, int depth)
 {
     hit_record rec;
+    // If we've exceeded the ray bounce limit, no more light is gathered.
+    if (depth <= 0) { return color(0,0,0); }
     // Test if the ray hit one of the objects
     if (world.hit(r, 0, INFINITE, rec)) {
-        // If we hit return the color at the location
-        return 0.5 * (rec.normal + color(1,1,1));
+        // If we hit, we cast an other ray from the normal with a little random shift
+        vec3 target = rec.p + rec.normal + random_in_unit_sphere();
+        // The recursively call this function with the new ray to get the reflections
+        return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);
     }
     // If no hit we return the background
     vec3 unit_direction = unit_vector(r.direction());
@@ -47,6 +33,7 @@ int main()
     const int IMG_WIDTH = 400;
     const int IMG_HEIGHT = static_cast<int>(IMG_WIDTH / ASPECT_RATIO);
     const int samples_per_pixel = 20;
+    const int max_depth = 50;
 
     // World assets
     hittable_list world;
@@ -80,7 +67,7 @@ int main()
                 // Get the ray from the camera to this pixel
                 ray r = cam.get_ray(u, v);
                 // Compute the ray color and add it to the pixel color
-                pixel_color += ray_color(r, world);
+                pixel_color += ray_color(r, world, max_depth);
             }
             // Average the color between all the samples and write it out
             write_color(file, pixel_color, samples_per_pixel);

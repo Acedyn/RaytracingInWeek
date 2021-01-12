@@ -39,3 +39,21 @@ inline double clamp(double x, double min, double max) {
 
 #include "ray.h"
 #include "vec3.h"
+
+// vec3 related functions
+
+inline static vec3 random() {
+    return vec3(random_double(), random_double(), random_double());
+}
+
+inline static vec3 random(double min, double max) {
+    return vec3(random_double(min,max), random_double(min,max), random_double(min,max));
+}
+
+vec3 random_in_unit_sphere() {
+    while (true) {
+        vec3 p = random(-1,1);
+        if (p.length_squared() >= 1) continue;
+        return p;
+    }
+}
