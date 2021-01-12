@@ -33,11 +33,12 @@ int main()
     const int IMG_WIDTH = 400;
     const int IMG_HEIGHT = static_cast<int>(IMG_WIDTH / ASPECT_RATIO);
     const int samples_per_pixel = 20;
-    const int max_depth = 50;
+    const int max_depth = 20;
 
     // World assets
     hittable_list world;
     world.add(std::make_shared<sphere>(vec3(0,0,-1), 0.5));
+    world.add(std::make_shared<sphere>(vec3(2,0,-1), 0.5));
     world.add(std::make_shared<sphere>(vec3(0,-100.5,-1), 100));
 
     // Create a camera that will create rays
