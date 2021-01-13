@@ -6,7 +6,13 @@ class camera
 {
 public:
     // Constructors
-    camera(double vfov, double aspect_ratio) 
+    camera(vec3 lookfrom, 
+        vec3 lookat, 
+        vec3 vup, 
+        double vfov, 
+        double aspect_ratio,
+        double aperture,
+        double focus_dist) 
     {
         double theta = degrees_to_radians(vfov);
         double h = tan(theta/2);
@@ -15,17 +21,40 @@ public:
         // Distance of the canvas
         double focal_length = 1.0;
 
-        origin = point3(0, 0, 0);
-        horizontal = vec3(viewport_width, 0.0, 0.0);
-        vertical = vec3(0.0, viewport_height, 0.0);
-        lower_left_corner = origin - horizontal/2 - vertical/2 - vec3(0, 0, focal_length);
+        // X axis
+        w = unit_vector(lookfrom - lookat);
+        // Z axis
+        u = unit_vector(cross(vup, w));
+        // Y axis
+        v = cross(w, u);
+
+        // Position
+        origin = lookfrom;
+        // Horizontal size of the canvas
+        horizontal = focus_dist * viewport_width * u;
+        // Vertical size of the canvas
+        vertical = focus_dist * viewport_height * v;
+        // Vector pointing from the camera to the lower left corner of the canvas
+        lower_left_corner = origin - horizontal/2 - vertical/2 - focus_dist*w;
+
+        // For defocus
+        lens_radius = aperture / 2;
     }
 
     // Return a ray from the UV coordinates of the canvas
     // (lower_left_corner being the ray pointing to the canvas at (0.0, 0.0))
-    ray get_ray(double u, double v) const 
+    ray get_ray(double s, double t) const 
     {
-        return ray(origin, lower_left_corner + u*horizontal + v*vertical - origin);
+        // We offset the origin of the ray randomly according to the lens_radius
+        // (biger the lens_radius is, bigger the randomization is)
+        vec3 rd = lens_radius * random_in_unit_disk();
+        vec3 offset = u * rd.x() + v * rd.y();
+
+        // We return a ray from offseted origin
+        return ray(
+            origin + offset,
+            lower_left_corner + s*horizontal + t*vertical - origin - offset
+        );
     }
 
 private:
@@ -33,8 +62,12 @@ private:
     vec3 origin;
     // Ray from the origin to the lower_left_corner of the canvas
     vec3 lower_left_corner;
-    // X axis
+    // U canvas's axis
     vec3 horizontal;
-    // Y axis
+    // V canvas's axis
     vec3 vertical;
+    // X, Y, Z axis of the camera
+    vec3 u, v, w;
+    // For defocus
+    double lens_radius;
 };

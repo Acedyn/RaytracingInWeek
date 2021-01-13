@@ -42,20 +42,30 @@ int main()
     const int IMG_WIDTH = 400;
     const int IMG_HEIGHT = static_cast<int>(IMG_WIDTH / ASPECT_RATIO);
     const int samples_per_pixel = 10;
-    const int max_depth = 5;
+    const int max_depth = 10;
 
     // World assets
-    auto R = cos(PI/4);
     hittable_list world;
 
-    auto material_left  = std::make_shared<lambertian>(color(0,0,1));
-    auto material_right = std::make_shared<lambertian>(color(1,0,0));
+    auto material_ground = std::make_shared<lambertian>(color(0.8, 0.8, 0.0));
+    auto material_center = std::make_shared<lambertian>(color(0.1, 0.2, 0.5));
+    auto material_left   = std::make_shared<dielectric>(1.5);
+    auto material_right  = std::make_shared<metal>(color(0.8, 0.6, 0.2), 0.0);
 
-    world.add(std::make_shared<sphere>(point3(-R, 0, -1), R, material_left));
-    world.add(std::make_shared<sphere>(point3( R, 0, -1), R, material_right));
+    world.add(std::make_shared<sphere>(point3( 0.0, -100.5, -1.0), 100.0, material_ground));
+    world.add(std::make_shared<sphere>(point3( 0.0,    0.0, -1.0),   0.5, material_center));
+    world.add(std::make_shared<sphere>(point3(-1.0,    0.0, -1.0),   0.5, material_left));
+    world.add(std::make_shared<sphere>(point3(-1.0,    0.0, -1.0), -0.45, material_left));
+    world.add(std::make_shared<sphere>(point3( 1.0,    0.0, -1.0),   0.5, material_right));
 
-    // Create a camera that will create rays
-    camera cam(90.0, ASPECT_RATIO);
+    // Create a camera that will create rayspoint3 lookfrom(3,3,2);
+    point3 lookat(0,0,-1);
+    point3 lookfrom(3,3,2);
+    vec3 vup(0,1,0);
+    auto dist_to_focus = (lookfrom-lookat).length();
+    auto aperture = 2.0;
+
+    camera cam(lookfrom, lookat, vup, 20, ASPECT_RATIO, aperture, dist_to_focus);
 
     // Output file
     std::ofstream file("raytracing.ppm");
