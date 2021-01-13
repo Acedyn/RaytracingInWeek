@@ -2,6 +2,7 @@
 #include "color.h"
 #include "hittable_list.h"
 #include "sphere.h"
+#include "moving_sphere.h"
 #include "camera.h"
 #include "material.h"
 
@@ -31,7 +32,9 @@ hittable_list random_scene()
                     // diffuse
                     auto albedo = random() * random();
                     sphere_material = std::make_shared<lambertian>(albedo);
-                    world.add(std::make_shared<sphere>(center, 0.2, sphere_material));
+                    auto center2 = center + vec3(0, random_double(0,.5), 0);
+                    world.add(std::make_shared<moving_sphere>(
+                        center, center2, 0.0, 1.0, 0.2, sphere_material));
                 } else if (choose_mat < 0.95) 
                 {
                     // metal
@@ -91,8 +94,8 @@ color ray_color(const ray& r, const hittable& world, int depth)
 int main()
 {
     // Image size
-    const double ASPECT_RATIO = 3.0f / 2.0f;
-    const int IMG_WIDTH = 1200;
+    const double ASPECT_RATIO = 16.0f / 9.0f;
+    const int IMG_WIDTH = 400;
     const int IMG_HEIGHT = static_cast<int>(IMG_WIDTH / ASPECT_RATIO);
     const int samples_per_pixel = 20;
     const int max_depth = 10;
@@ -106,8 +109,9 @@ int main()
     vec3 vup(0,1,0);
     auto dist_to_focus = 10.0;
     auto aperture = 0.1;
+    int image_height = static_cast<int>(IMG_WIDTH / ASPECT_RATIO);
 
-    camera cam(lookfrom, lookat, vup, 20, ASPECT_RATIO, aperture, dist_to_focus);
+    camera cam(lookfrom, lookat, vup, 20, ASPECT_RATIO, aperture, dist_to_focus, 0.0, 1.0);
 
     // Output file
     std::ofstream file("raytracing.ppm");

@@ -30,7 +30,7 @@ public:
             scatter_direction = rec.normal;
 
         // Create a bouning ray from the hit record (returned by reference)
-        scattered = ray(rec.p, scatter_direction);
+        scattered = ray(rec.p, scatter_direction, r_in.time());
         // Create a color from the hit record (returned by reference)
         attenuation = albedo;
         return true;
@@ -54,7 +54,7 @@ public:
         // Get the reflected vector from the normal and the input ray
         vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
         // Create the output ray for the reflected vector
-        scattered = ray(rec.p, reflected + fuzz * random_in_unit_sphere());
+        scattered = ray(rec.p, reflected + fuzz*random_in_unit_sphere(), r_in.time());
         // Create the output color thos the hit record
         attenuation = albedo;
         return (dot(scattered.direction(), rec.normal) > 0);
@@ -97,7 +97,7 @@ public:
 
 
         // Create the output ray from the refracted vector
-        scattered = ray(rec.p, direction);
+        scattered = ray(rec.p, direction, r_in.time());
         return true;
     }
 
