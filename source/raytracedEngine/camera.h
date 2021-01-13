@@ -6,10 +6,11 @@ class camera
 {
 public:
     // Constructors
-    camera() 
+    camera(double vfov, double aspect_ratio) 
     {
-        double aspect_ratio = 16.0 / 9.0;
-        double viewport_height = 2.0;
+        double theta = degrees_to_radians(vfov);
+        double h = tan(theta/2);
+        double viewport_height = 2.0 * h;
         double viewport_width = aspect_ratio * viewport_height;
         // Distance of the canvas
         double focal_length = 1.0;
